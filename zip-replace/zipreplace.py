@@ -3,9 +3,10 @@ import zipfile
 import shutil
 import sys
 from create_test_zip_file import gen_test_zip_file
+from zipprocessor import ZipProcessor
 
 
-class ZipReplace:
+class ZipReplace(ZipProcessor):
     def __init__(self, filename, search_string, replace_string):
         self.filename = filename
         self.search_string = search_string
