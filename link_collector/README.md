@@ -10,3 +10,5 @@ RUN:
 python link_collector/link_parser.py http://localhost:8000/contact.html
 
 3. Need to build a site map: which links were linked to from which pages => use dict
+
+4. Use queue to process multiple requests parallel as replacement for currently recursive collect_links

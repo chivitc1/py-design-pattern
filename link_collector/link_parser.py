@@ -1,5 +1,6 @@
 from urllib.request import urlopen
 from urllib.parse import urlparse
+from queue import Queue
 import re
 import sys
 
@@ -12,32 +13,32 @@ class LinkCollector:
         self.collected_links = dict()
         self.visited_links = set()
 
-    def collect_links(self, path="/"):
-        full_url = self.url + path
-        self.visited_links.add(full_url)
+    def collect_links(self):
+        queue = Queue()
+        queue.put(self.url)
+        while not queue.empty():
+            url = queue.get().rstrip('/')
+            self.visited_links.add(url)
+            page = str(urlopen(url).read())
+            links = LINK_REGEX.findall(page)
+            links = {self.normalize_url(urlparse(url).path, link) for link in links}
 
-        page = str(urlopen(full_url).read())
-        links = LINK_REGEX.findall(page)
+            self.collected_links[url] = links
+            for link in links:
+                self.collected_links.setdefault(link, set())
+            unvisited_links = links.difference(self.visited_links)
 
-        links = {self.normalize_url(path, link) for link in links}
-
-        self.collected_links[full_url] = links
-        for link in links:
-            self.collected_links.setdefault(link, set())
-        unvisited_links = links.difference(self.visited_links)
-        print(links, self.visited_links, self.collected_links, unvisited_links)
-
-        for link in unvisited_links:
-            if link.startswith(self.url):
-                self.collect_links(urlparse(link).path)
+            for link in unvisited_links:
+                if link.startswith(self.url):
+                    queue.put(link)
 
     def normalize_url(self, path, link):
         if link.startswith("http://"):
-            return link
+            return link.rstrip('/')
         elif link.startswith("/"):
-            return self.url + link
+            return self.url + link.rstrip('/')
         else:
-            return self.url + path.rpartition('/')[0] + '/' + link
+            return self.url + path.rpartition('/')[0] + '/' + link.rstrip('/')
 
 
 if __name__ == '__main__':
