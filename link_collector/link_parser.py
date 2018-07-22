@@ -9,7 +9,7 @@ LINK_REGEX = re.compile(pattern="<a [^>]*href=['\"]([^'\"]+)['\"][^>]*>")
 class LinkCollector:
     def __init__(self, url):
         self.url = "http://" + urlparse(url).netloc
-        self.collected_links = set()
+        self.collected_links = dict()
         self.visited_links = set()
 
     def collect_links(self, path="/"):
@@ -20,7 +20,10 @@ class LinkCollector:
         links = LINK_REGEX.findall(page)
 
         links = {self.normalize_url(path, link) for link in links}
-        self.collected_links = links.union(self.collected_links)
+
+        self.collected_links[full_url] = links
+        for link in links:
+            self.collected_links.setdefault(link, set())
         unvisited_links = links.difference(self.visited_links)
         print(links, self.visited_links, self.collected_links, unvisited_links)
 
@@ -40,5 +43,5 @@ class LinkCollector:
 if __name__ == '__main__':
     collector = LinkCollector(sys.argv[1])
     collector.collect_links()
-    for link in collector.collected_links:
-        print(link)
+    for link, item in collector.collected_links.items():
+        print("{}: {}".format(link, item))
