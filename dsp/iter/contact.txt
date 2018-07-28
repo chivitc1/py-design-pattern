@@ -1,0 +1,4 @@
+email	firstname	lastname
+john@example.com	John	Bui
+an@gmail.com	An	Nguyen
+tuan@example.com	Tuan	Le
